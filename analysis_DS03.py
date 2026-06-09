@@ -1,8 +1,6 @@
 """
-FUTURE_DS_03 — Marketing Funnel & Conversion Analysis
-Bank Marketing Dataset | FutureInterns Internship Task 3
-Author: [Your Name]
-"""
+— Marketing Funnel & Conversion Analysis
+Bank Marketing Dataset | 
 
 import pandas as pd
 import numpy as np
