@@ -12,9 +12,9 @@
 
 ## 📸 Dashboard Preview
 
-![KPI Cards](screenshot1.png)
-![Funnel Chart](screenshot2.png)
-![Segment Analysis](screenshot3.png)
+[KPI Cards](screenshot1.png)
+[Funnel Chart](screenshot2.png)
+[Segment Analysis](screenshot3.png)
 
 Analyze a bank's telemarketing campaign data to understand the lead-to-customer conversion funnel:
 - Map **funnel stages** from contact → engaged → interested → hot lead → converted
