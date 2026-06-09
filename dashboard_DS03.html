@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FUTURE_DS_03 — Marketing Funnel Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg:       #070b12;
+  --s1:       #0d1117;
+  --s2:       #111927;
+  --border:   #1a2332;
+  --blue:     #2563eb;
+  --sky:      #38bdf8;
+  --green:    #10b981;
+  --amber:    #f59e0b;
+  --red:      #ef4444;
+  --purple:   #7c3aed;
+  --pink:     #db2777;
+  --text:     #f0f6ff;
+  --muted:    #4b6280;
+  --muted2:   #1e2d3d;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,#080f1e 0%,#0d1930 60%,#080f1e 100%);
+  border-bottom:1px solid var(--border);
+  padding:1.8rem 2.5rem;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  position:relative;overflow:hidden;
+}
+header::before{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(37,99,235,0.1) 0%,transparent 65%);
+  border-radius:50%;pointer-events:none;
+}
+.hdr-left h1{
+  font-size:1.55rem;font-weight:900;letter-spacing:-0.8px;
+  background:linear-gradient(90deg,#60a5fa,#38bdf8,#34d399);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hdr-left p{font-size:0.75rem;color:var(--muted);margin-top:4px;letter-spacing:0.5px;}
+.hdr-badges{display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;}
+.pill{
+  padding:5px 14px;border-radius:999px;font-size:0.68rem;font-weight:700;
+  letter-spacing:0.5px;text-transform:uppercase;border:1px solid;
+}
+.pill-blue  {background:rgba(37,99,235,.15);border-color:rgba(37,99,235,.4);color:#60a5fa;}
+.pill-green {background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#10b981;}
+.pill-amber {background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#f59e0b;}
+
+/* ── MAIN ── */
+main{padding:2rem 2.5rem;max-width:1600px;margin:0 auto;}
+.sec{font-size:.62rem;font-weight:800;letter-spacing:3.5px;text-transform:uppercase;
+     color:var(--sky);margin:2.2rem 0 1rem;}
+
+/* ── KPI STRIP ── */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:.9rem;}
+@media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:650px){.kpi-strip{grid-template-columns:repeat(2,1fr);}}
+.kpi{
+  background:var(--s1);border:1px solid var(--border);border-radius:14px;
+  padding:1.2rem 1rem;position:relative;overflow:hidden;
+  transition:transform .2s,border-color .2s;
+}
+.kpi:hover{transform:translateY(-3px);border-color:rgba(56,189,248,.3);}
+.kpi::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--kc,var(--blue));
+}
+.kpi-val{
+  font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;
+  color:var(--kc,var(--text));line-height:1;margin-bottom:5px;
+}
+.kpi-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.kpi-hint{font-size:.66rem;color:var(--muted);margin-top:5px;}
+
+/* ── FUNNEL ── */
+.funnel-wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:1rem;}
+@media(max-width:950px){.funnel-wrap{grid-template-columns:1fr;}}
+
+.funnel-visual{
+  background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:1.6rem;
+}
+.funnel-stages{display:flex;flex-direction:column;gap:.7rem;margin-top:.5rem;}
+.fs{position:relative;}
+.fs-bar-bg{
+  border-radius:8px;overflow:hidden;height:48px;
+  background:var(--s2);display:flex;align-items:center;
+}
+.fs-bar-fill{
+  height:100%;border-radius:8px;display:flex;align-items:center;
+  padding:0 1rem;transition:width 1.2s cubic-bezier(.4,0,.2,1);
+  position:relative;
+}
+.fs-label{font-size:.78rem;font-weight:600;color:#fff;white-space:nowrap;}
+.fs-count{
+  position:absolute;right:1rem;font-family:'JetBrains Mono',monospace;
+  font-size:.72rem;font-weight:600;color:rgba(255,255,255,.85);
+}
+.fs-pct{
+  font-size:.68rem;color:var(--muted);margin-top:3px;
+  display:flex;justify-content:space-between;padding:0 4px;
+}
+.drop-arrow{
+  text-align:center;font-size:.68rem;color:var(--red);
+  font-weight:600;margin:2px 0;letter-spacing:.5px;
+}
+
+/* ── CARDS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.g13{display:grid;grid-template-columns:1fr 1.8fr;gap:1rem;}
+@media(max-width:1000px){.g2,.g3,.g13{grid-template-columns:1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:1.4rem;}
+.ct{font-size:.86rem;font-weight:700;margin-bottom:3px;}
+.cs{font-size:.68rem;color:var(--muted);margin-bottom:1.1rem;}
+.ch200{position:relative;height:200px;}
+.ch250{position:relative;height:250px;}
+.ch280{position:relative;height:280px;}
+.ch320{position:relative;height:320px;}
+
+/* ── SEGMENT BARS ── */
+.seg-list{display:flex;flex-direction:column;gap:9px;}
+.seg-row{display:flex;align-items:center;gap:10px;font-size:.76rem;}
+.seg-lbl{min-width:120px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.seg-track{flex:1;height:7px;background:var(--s2);border-radius:4px;overflow:hidden;}
+.seg-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+.seg-pct{min-width:40px;text-align:right;font-weight:700;font-size:.73rem;font-family:'JetBrains Mono',monospace;}
+
+/* ── CHANNEL COMPARE ── */
+.channel-compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.5rem;}
+.ch-block{
+  background:var(--s2);border-radius:12px;padding:1.2rem;
+  border:1px solid var(--border);text-align:center;
+}
+.ch-name{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem;}
+.ch-val{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;}
+.ch-sub{font-size:.68rem;color:var(--muted);margin-top:4px;}
+.ch-bar{height:6px;border-radius:3px;margin-top:.8rem;}
+
+/* ── INSIGHTS ── */
+.ins-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;margin-bottom:2rem;}
+@media(max-width:900px){.ins-grid{grid-template-columns:1fr;}}
+.ins{
+  background:var(--s1);border:1px solid var(--border);border-radius:14px;
+  padding:1.1rem 1.2rem;display:flex;gap:.9rem;
+}
+.ins-ico{font-size:1.5rem;flex-shrink:0;margin-top:2px;}
+.ins-t{font-size:.82rem;font-weight:700;margin-bottom:5px;}
+.ins-b{font-size:.75rem;color:var(--muted);line-height:1.65;}
+.hl {color:var(--green);font-weight:700;}
+.hl-r{color:var(--red);font-weight:700;}
+.hl-a{color:var(--amber);font-weight:700;}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);padding:1.2rem 2.5rem;
+  display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);flex-wrap:wrap;gap:.5rem;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-left">
+    <h1>📊 Marketing Funnel Dashboard</h1>
+    <p>FUTURE_DS_03 · Bank Marketing Campaign · FutureInterns Internship Task 3</p>
+  </div>
+  <div class="hdr-badges">
+    <span class="pill pill-blue">41,188 Leads</span>
+    <span class="pill pill-green">11.3% Overall CVR</span>
+    <span class="pill pill-amber">4,640 Conversions</span>
+  </div>
+</header>
+
+<main>
+
+<!-- KPIs -->
+<div class="sec">Key Performance Indicators</div>
+<div class="kpi-strip">
+  <div class="kpi" style="--kc:#38bdf8">
+    <div class="kpi-val" style="color:#38bdf8">41,188</div>
+    <div class="kpi-lbl">Total Leads</div>
+    <div class="kpi-hint">Contacted in campaign</div>
+  </div>
+  <div class="kpi" style="--kc:#10b981">
+    <div class="kpi-val" style="color:#10b981">11.3%</div>
+    <div class="kpi-lbl">Overall CVR</div>
+    <div class="kpi-hint">4,640 conversions</div>
+  </div>
+  <div class="kpi" style="--kc:#2563eb">
+    <div class="kpi-val" style="color:#2563eb">14.7%</div>
+    <div class="kpi-lbl">Cellular CVR</div>
+    <div class="kpi-hint">vs 5.2% telephone</div>
+  </div>
+  <div class="kpi" style="--kc:#f59e0b">
+    <div class="kpi-val" style="color:#f59e0b">553s</div>
+    <div class="kpi-lbl">Avg Call (Conv.)</div>
+    <div class="kpi-hint">vs 221s not converted</div>
+  </div>
+  <div class="kpi" style="--kc:#7c3aed">
+    <div class="kpi-val" style="color:#7c3aed">65.1%</div>
+    <div class="kpi-lbl">Re-contact CVR</div>
+    <div class="kpi-hint">Previous success leads</div>
+  </div>
+</div>
+
+<!-- FUNNEL -->
+<div class="sec">Marketing Funnel — Stage by Stage</div>
+<div class="funnel-wrap">
+  <div class="funnel-visual">
+    <div class="ct">Conversion Funnel</div>
+    <div class="cs">Where leads drop off across each stage</div>
+    <div class="funnel-stages">
+
+      <div class="fs">
+        <div class="fs-bar-bg">
+          <div class="fs-bar-fill" style="width:100%;background:linear-gradient(90deg,#1d4ed8,#2563eb)">
+            <span class="fs-label">📋 Contacted — All Leads</span>
+            <span class="fs-count">41,188</span>
+          </div>
+        </div>
+        <div class="fs-pct"><span>100%</span><span>Baseline</span></div>
+      </div>
+
+      <div class="drop-arrow">▼ 0% drop-off</div>
+
+      <div class="fs">
+        <div class="fs-bar-bg">
+          <div class="fs-bar-fill" style="width:99.9%;background:linear-gradient(90deg,#0369a1,#0ea5e9)">
+            <span class="fs-label">📞 Engaged (Call &gt;0s)</span>
+            <span class="fs-count">41,184</span>
+          </div>
+        </div>
+        <div class="fs-pct"><span>~100%</span><span>Near-zero drop</span></div>
+      </div>
+
+      <div class="drop-arrow">▼ 31.4% drop-off</div>
+
+      <div class="fs">
+        <div class="fs-bar-bg">
+          <div class="fs-bar-fill" style="width:68.6%;background:linear-gradient(90deg,#0e7490,#06b6d4)">
+            <span class="fs-label">💬 Interested (Call &gt;2min)</span>
+            <span class="fs-count">28,271</span>
+          </div>
+        </div>
+        <div class="fs-pct"><span>68.6%</span><span>31.4% lost here</span></div>
+      </div>
+
+      <div class="drop-arrow">▼ 60.4% drop-off ← BIGGEST LEAK</div>
+
+      <div class="fs">
+        <div class="fs-bar-bg">
+          <div class="fs-bar-fill" style="width:27.2%;background:linear-gradient(90deg,#b45309,#f59e0b)">
+            <span class="fs-label">🔥 Hot Lead (Call &gt;5min)</span>
+            <span class="fs-count">11,204</span>
+          </div>
+        </div>
+        <div class="fs-pct"><span>27.2%</span><span>60.4% lost here</span></div>
+      </div>
+
+      <div class="drop-arrow">▼ 58.6% drop-off</div>
+
+      <div class="fs">
+        <div class="fs-bar-bg">
+          <div class="fs-bar-fill" style="width:11.3%;background:linear-gradient(90deg,#065f46,#10b981)">
+            <span class="fs-label">✅ Converted</span>
+            <span class="fs-count">4,640</span>
+          </div>
+        </div>
+        <div class="fs-pct"><span>11.3%</span><span>Final conversion rate</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <!-- Channel compare -->
+    <div class="card">
+      <div class="ct">Channel Performance</div>
+      <div class="cs">Cellular vs Telephone conversion rate</div>
+      <div class="channel-compare">
+        <div class="ch-block">
+          <div class="ch-name">📱 Cellular</div>
+          <div class="ch-val" style="color:#10b981">14.7%</div>
+          <div class="ch-sub">26,144 contacts · 3,853 converted</div>
+          <div class="ch-bar" style="background:linear-gradient(90deg,#065f46,#10b981);width:100%"></div>
+        </div>
+        <div class="ch-block">
+          <div class="ch-name">☎️ Telephone</div>
+          <div class="ch-val" style="color:#ef4444">5.2%</div>
+          <div class="ch-sub">15,044 contacts · 787 converted</div>
+          <div class="ch-bar" style="background:linear-gradient(90deg,#7f1d1d,#ef4444);width:35%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Previous outcome -->
+    <div class="card">
+      <div class="ct">Previous Campaign Impact</div>
+      <div class="cs">Prior contact outcome vs current conversion</div>
+      <div class="seg-list" style="margin-top:.5rem">
+        <div class="seg-row">
+          <span class="seg-lbl">✅ Prior Success</span>
+          <div class="seg-track"><div class="seg-fill" style="width:100%;background:#10b981"></div></div>
+          <span class="seg-pct" style="color:#10b981">65.1%</span>
+        </div>
+        <div class="seg-row">
+          <span class="seg-lbl">❌ Prior Failure</span>
+          <div class="seg-track"><div class="seg-fill" style="width:21.8%;background:#f59e0b"></div></div>
+          <span class="seg-pct" style="color:#f59e0b">14.2%</span>
+        </div>
+        <div class="seg-row">
+          <span class="seg-lbl">🆕 No Prior Contact</span>
+          <div class="seg-track"><div class="seg-fill" style="width:13.5%;background:#38bdf8"></div></div>
+          <span class="seg-pct" style="color:#38bdf8">8.8%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Monthly + Call Volume -->
+<div class="sec">Monthly Trends & Call Efficiency</div>
+<div class="g2">
+  <div class="card">
+    <div class="ct">Monthly Conversion Rate</div>
+    <div class="cs">Clear seasonality — Mar/Dec/Sep/Oct peak, May lowest</div>
+    <div class="ch280"><canvas id="monthlyChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="ct">Conversion Rate by Call Volume</div>
+    <div class="cs">More calls = lower CVR — diminishing returns after 3 calls</div>
+    <div class="ch280"><canvas id="callVolumeChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Segments -->
+<div class="sec">Segment Conversion Analysis</div>
+<div class="g3">
+  <div class="card">
+    <div class="ct">Conversion by Job</div>
+    <div class="cs">Students & Retirees convert best</div>
+    <div class="seg-list" id="jobBars"></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Conversion by Age Group</div>
+    <div class="cs">65+ leads are gold — often ignored</div>
+    <div class="ch250"><canvas id="ageChart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">Conversion by Education</div>
+    <div class="cs">University-educated leads convert better</div>
+    <div class="seg-list" id="eduBars"></div>
+  </div>
+</div>
+
+<!-- Day of week + Duration -->
+<div class="g2">
+  <div class="card">
+    <div class="ct">Conversion by Day of Week</div>
+    <div class="cs">Thursday & Tuesday are the best calling days</div>
+    <div class="ch250"><canvas id="dayChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="ct">Call Duration Distribution</div>
+    <div class="cs">Converted leads have 2.5× longer call duration</div>
+    <div class="ch250"><canvas id="durationChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Insights -->
+<div class="sec">Key Insights & Recommendations</div>
+<div class="ins-grid">
+  <div class="ins">
+    <div class="ins-ico">🚨</div>
+    <div>
+      <div class="ins-t">Biggest Funnel Leak: Interested → Hot Lead</div>
+      <div class="ins-b"><span class="hl-r">60.4% of interested leads</span> never become hot leads. This is the single biggest drop-off in the funnel. <strong>Rec:</strong> Train agents to extend call quality past the 2-min mark using a structured pitch script. Goal is to push more leads past 5 minutes.</div>
+    </div>
+  </div>
+  <div class="ins">
+    <div class="ins-ico">📱</div>
+    <div>
+      <div class="ins-t">Go All-In on Cellular</div>
+      <div class="ins-b">Cellular converts at <span class="hl">14.7%</span> — <span class="hl-r">2.8× better</span> than telephone (5.2%). Yet 36% of contacts still use telephone. <strong>Rec:</strong> Reallocate telephone budget entirely to cellular outreach. This one shift can dramatically lift overall CVR.</div>
+    </div>
+  </div>
+  <div class="ins">
+    <div class="ins-ico">♻️</div>
+    <div>
+      <div class="ins-t">Re-contact Past Successes First</div>
+      <div class="ins-b">Previous campaign successes convert at <span class="hl">65.1%</span> — the highest CVR of any segment. <strong>Rec:</strong> Always exhaust your re-contact list before reaching new leads. These leads are effectively pre-qualified and 7× easier to convert.</div>
+    </div>
+  </div>
+  <div class="ins">
+    <div class="ins-ico">📅</div>
+    <div>
+      <div class="ins-t">Focus Budget on Mar, Sep, Oct, Dec</div>
+      <div class="ins-b">These 4 months deliver <span class="hl">44–51% CVR</span>. May has 13,769 contacts but only <span class="hl-r">6.4% CVR</span>. <strong>Rec:</strong> Shift campaign budgets toward Q4 and early Q1. Reduce May outreach by 40% and redeploy those resources to peak months.</div>
+    </div>
+  </div>
+  <div class="ins">
+    <div class="ins-ico">📞</div>
+    <div>
+      <div class="ins-t">Stop After 3 Calls Per Lead</div>
+      <div class="ins-b">CVR drops from <span class="hl">13.0% at 1 call</span> to just <span class="hl-r">3.1% at 10+ calls</span>. Over-calling wastes agent time and budget. <strong>Rec:</strong> Implement a hard cap of 3 contact attempts per lead. Flag non-responders for re-engagement in a future campaign cycle.</div>
+    </div>
+  </div>
+  <div class="ins">
+    <div class="ins-ico">🎯</div>
+    <div>
+      <div class="ins-t">Target Students, Retirees & 65+ Segments</div>
+      <div class="ins-b">Students convert at <span class="hl">31.4%</span>, Retirees at <span class="hl">25.2%</span>, and age 65+ at <span class="hl">46.8%</span> — all dramatically above average. <strong>Rec:</strong> Build dedicated calling lists for these segments and train agents with segment-specific scripts for each profile.</div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <span>FUTURE_DS_03 · FutureInterns Internship Task 3 · Marketing Funnel Analysis</span>
+  <span>UCI Bank Marketing Dataset · 41,188 records · 21 features · 2 campaigns</span>
+</footer>
+
+<script>
+Chart.defaults.color = '#4b6280';
+Chart.defaults.font.family = "'Inter', sans-serif";
+const grid = { color:'rgba(255,255,255,0.04)', drawBorder:false };
+
+// ── DATA ──────────────────────────────────
+const months = {
+  labels:['Mar','Dec','Sep','Oct','Apr','Aug','Jun','Nov','Jul','May'],
+  cvr:   [50.6, 48.9, 44.9, 43.9, 20.5, 10.6, 10.5, 10.1, 9.1, 6.4],
+  vol:   [546,  182,  570,  718, 2632, 6178, 5318, 4101, 7174,13769]
+};
+
+const callBuckets = {
+  labels:['1 call','2 calls','3 calls','4-5 calls','6-10 calls','10+ calls'],
+  cvr:   [13.0, 11.5, 10.7, 8.7, 6.3, 3.1]
+};
+
+const jobs = [
+  {name:'Student',       cvr:31.4, c:'#10b981'},
+  {name:'Retired',       cvr:25.2, c:'#38bdf8'},
+  {name:'Unemployed',    cvr:14.2, c:'#7c3aed'},
+  {name:'Admin',         cvr:13.0, c:'#2563eb'},
+  {name:'Unknown',       cvr:11.2, c:'#64748b'},
+  {name:'Management',    cvr:11.2, c:'#0ea5e9'},
+  {name:'Technician',    cvr:10.8, c:'#06b6d4'},
+  {name:'Self-employed', cvr:10.5, c:'#8b5cf6'},
+  {name:'Housemaid',     cvr:10.0, c:'#6366f1'},
+  {name:'Entrepreneur',  cvr: 8.5, c:'#f59e0b'},
+  {name:'Services',      cvr: 8.1, c:'#f97316'},
+  {name:'Blue-collar',   cvr: 6.9, c:'#ef4444'},
+];
+
+const ages = {
+  labels:['<25','25-35','35-45','45-55','55-65','65+'],
+  cvr:   [20.9, 11.7, 8.5, 8.7, 15.2, 46.8]
+};
+
+const edu = [
+  {name:'Illiterate',       cvr:22.2, c:'#10b981'},
+  {name:'Unknown',          cvr:14.5, c:'#38bdf8'},
+  {name:'University',       cvr:13.7, c:'#7c3aed'},
+  {name:'Professional',     cvr:11.3, c:'#2563eb'},
+  {name:'High School',      cvr:10.8, c:'#0ea5e9'},
+  {name:'Basic 4y',         cvr:10.2, c:'#f59e0b'},
+  {name:'Basic 6y',         cvr: 8.2, c:'#f97316'},
+  {name:'Basic 9y',         cvr: 7.8, c:'#ef4444'},
+];
+
+const days = {
+  labels:['Thu','Tue','Wed','Fri','Mon'],
+  cvr:   [12.1, 11.8, 11.7, 10.8, 9.9]
+};
+
+// ── MONTHLY CHART ─────────────────────────
+new Chart(document.getElementById('monthlyChart'),{
+  type:'bar',
+  data:{
+    labels: months.labels,
+    datasets:[
+      {
+        label:'CVR %',
+        data: months.cvr,
+        backgroundColor: months.cvr.map(v => v>=40?'rgba(16,185,129,.85)':v>=15?'rgba(245,158,11,.75)':'rgba(239,68,68,.65)'),
+        borderRadius:7, yAxisID:'y'
+      },
+      {
+        label:'Contact Volume',
+        data: months.vol,
+        type:'line',
+        borderColor:'rgba(56,189,248,.7)',
+        backgroundColor:'transparent',
+        borderWidth:2, pointRadius:4,
+        pointBackgroundColor:'#38bdf8',
+        tension:.4, yAxisID:'y2'
+      }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}},
+    scales:{
+      x:{grid,ticks:{font:{size:9}}},
+      y:{grid,ticks:{callback:v=>v+'%',font:{size:9}},title:{display:true,text:'CVR %',font:{size:9}}},
+      y2:{position:'right',grid:{display:false},ticks:{callback:v=>(v/1000).toFixed(0)+'K',font:{size:9}}}
+    }
+  }
+});
+
+// ── CALL VOLUME CHART ─────────────────────
+new Chart(document.getElementById('callVolumeChart'),{
+  type:'bar',
+  data:{
+    labels: callBuckets.labels,
+    datasets:[{
+      label:'CVR %',
+      data: callBuckets.cvr,
+      backgroundColor:['rgba(16,185,129,.85)','rgba(16,185,129,.7)','rgba(245,158,11,.75)',
+                        'rgba(245,158,11,.6)','rgba(239,68,68,.7)','rgba(239,68,68,.85)'],
+      borderRadius:7
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid,ticks:{font:{size:9}}},
+      y:{grid,ticks:{callback:v=>v+'%',font:{size:9}}}
+    }
+  }
+});
+
+// ── JOB BARS ──────────────────────────────
+const jb = document.getElementById('jobBars');
+const maxJob = Math.max(...jobs.map(j=>j.cvr));
+jobs.forEach(j=>{
+  jb.innerHTML+=`
+    <div class="seg-row">
+      <span class="seg-lbl">${j.name}</span>
+      <div class="seg-track"><div class="seg-fill" style="width:${j.cvr/maxJob*100}%;background:${j.c}"></div></div>
+      <span class="seg-pct" style="color:${j.c}">${j.cvr}%</span>
+    </div>`;
+});
+
+// ── AGE CHART ─────────────────────────────
+new Chart(document.getElementById('ageChart'),{
+  type:'bar',
+  data:{
+    labels: ages.labels,
+    datasets:[{
+      label:'CVR %',
+      data: ages.cvr,
+      backgroundColor:['rgba(56,189,248,.8)','rgba(37,99,235,.75)','rgba(239,68,68,.7)',
+                        'rgba(245,158,11,.75)','rgba(16,185,129,.75)','rgba(124,58,237,.85)'],
+      borderRadius:8
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid,ticks:{font:{size:10}}},
+      y:{grid,ticks:{callback:v=>v+'%',font:{size:9}}}
+    }
+  }
+});
+
+// ── EDUCATION BARS ────────────────────────
+const eb = document.getElementById('eduBars');
+const maxEdu = Math.max(...edu.map(e=>e.cvr));
+edu.forEach(e=>{
+  eb.innerHTML+=`
+    <div class="seg-row">
+      <span class="seg-lbl">${e.name}</span>
+      <div class="seg-track"><div class="seg-fill" style="width:${e.cvr/maxEdu*100}%;background:${e.c}"></div></div>
+      <span class="seg-pct" style="color:${e.c}">${e.cvr}%</span>
+    </div>`;
+});
+
+// ── DAY CHART ─────────────────────────────
+new Chart(document.getElementById('dayChart'),{
+  type:'polarArea',
+  data:{
+    labels: days.labels,
+    datasets:[{
+      data: days.cvr,
+      backgroundColor:['rgba(16,185,129,.75)','rgba(56,189,248,.75)','rgba(124,58,237,.7)',
+                        'rgba(245,158,11,.7)','rgba(239,68,68,.7)'],
+      borderWidth:0
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'right',labels:{boxWidth:10,font:{size:10}}}},
+    scales:{r:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{callback:v=>v+'%',font:{size:8}}}}
+  }
+});
+
+// ── DURATION CHART ────────────────────────
+new Chart(document.getElementById('durationChart'),{
+  type:'bar',
+  data:{
+    labels:['0-1min','1-2min','2-3min','3-5min','5-8min','8min+'],
+    datasets:[
+      {
+        label:'Converted',
+        data:[2,8,15,28,28,19],
+        backgroundColor:'rgba(16,185,129,.75)',
+        borderRadius:6
+      },
+      {
+        label:'Not Converted',
+        data:[15,28,24,18,10,5],
+        backgroundColor:'rgba(239,68,68,.6)',
+        borderRadius:6
+      }
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}},
+    scales:{
+      x:{grid,ticks:{font:{size:9}}},
+      y:{grid,ticks:{callback:v=>v+'%',font:{size:9}},title:{display:true,text:'% of group',font:{size:9}}}
+    }
+  }
+});
+</script>
+</body>
+</html>
