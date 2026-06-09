@@ -189,13 +189,3 @@ Open `dashboard.html` in any modern browser — no server required.
 | HTML + CSS | Client-ready, single-file dashboard |
 
 ---
-
-## 🏆 Internship Completion
-
-| Task | Repo | Status |
-|---|---|---|
-| Task 1 — Sales Analytics | FUTURE_DS_01 | ✅ Complete |
-| Task 2 — Churn & Retention | FUTURE_DS_02 | ✅ Complete |
-| Task 3 — Marketing Funnel | FUTURE_DS_03 | ✅ Complete |
-
----
