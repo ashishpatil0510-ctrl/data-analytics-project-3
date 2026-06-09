@@ -28,7 +28,7 @@ Analyze a bank's telemarketing campaign data to understand the lead-to-customer 
 ## 📁 Project Structure
 
 ```
-FUTURE_DS_03/
+PROJECT/
 │
 ├── dashboard.html              ← 🎨 Interactive funnel dashboard (open in browser)
 ├── analysis.py                 ← 🐍 Full Python funnel analysis script
